@@ -1,0 +1,87 @@
+openapi: 3.0.0
+info:
+  title: ORNAMENTO - Service Promotions
+  version: 1.0.0
+  description: API pour gérer les promotions sur les produits
+
+paths:
+  /promotions:
+    get:
+      summary: Liste toutes les promotions
+      responses:
+        '200':
+          description: Liste des promotions actives
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Promotion'
+
+    post:
+      summary: Créer une nouvelle promotion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPromotion'
+      responses:
+        '201':
+          description: Promotion créée
+
+  /promotions/{product_id}:
+    get:
+      summary: Obtenir la promotion d’un produit donné
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détail de la promotion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Promotion'
+        '404':
+          description: Aucune promotion trouvée
+
+components:
+  schemas:
+    Promotion:
+      type: object
+      properties:
+        id:
+          type: integer
+        product_id:
+          type: integer
+        discount_percentage:
+          type: number
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+
+    NewPromotion:
+      type: object
+      required: [product_id, discount_percentage, start_date, end_date]
+      properties:
+        product_id:
+          type: integer
+        discount_percentage:
+          type: number
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/oracle-6d3/ornamento-api/1.0.0
