@@ -1,0 +1,152 @@
+openapi: 3.0.0
+info:
+  title: ORNAMENTO - Service Promotions
+  description: |
+    Le service ORNAMENTO - Promotions est un microservice RESTful de la plateforme ORNAMENTO.
+
+    Il permet la gestion complète des promotions sur les produits de la marketplace. Cela inclut
+    la création, la modification, la suppression et la consultation de remises commerciales, sans
+    modifier les prix des produits eux-mêmes.
+
+    Il est conçu pour être utilisé par les services PANIER, PRODUIT, COMMANDE et INTERFACE CLIENT,
+    afin d’afficher les prix remisés, calculer les totaux avec remises, ou valider des offres.
+
+    Le service expose plusieurs endpoints :
+    - GET /promotions : lister toutes les promotions actives
+    - POST /promotions : créer une nouvelle promotion
+    - GET /promotions/{product_id} : consulter une promo pour un produit
+    - PUT /promotions/{id} : mettre à jour une promotion existante
+    - DELETE /promotions/{id} : supprimer une promotion
+
+    Il est hébergé sur Render (https://ornamento-promotions.onrender.com), et documenté avec OpenAPI 3.0.
+  version: 1.0.0
+servers:
+- url: https://ornamento-promotions.onrender.com
+  description: Serveur Render (production)
+- url: http://localhost:8000
+  description: Serveur local (développement)
+- url: https://virtserver.swaggerhub.com/oracle-6d3/ornamento-api/1.0.0
+  description: Mock SwaggerHub (tests sans backend)
+security:
+- ApiKeyAuth: []
+paths:
+  /promotions:
+    get:
+      summary: Liste toutes les promotions actives
+      responses:
+        "200":
+          description: Liste des promotions actives
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Promotion"
+    post:
+      summary: Créer une nouvelle promotion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewPromotion"
+        required: true
+      responses:
+        "201":
+          description: Promotion créée avec succès
+        "400":
+          description: Requête invalide
+  /promotions/{product_id}:
+    get:
+      summary: Obtenir la promotion d’un produit donné
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Détail de la promotion trouvée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Promotion"
+        "404":
+          description: Aucune promotion trouvée pour ce produit
+  /promotions/{id}:
+    put:
+      summary: Mettre à jour une promotion existante
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewPromotion"
+        required: true
+      responses:
+        "200":
+          description: Promotion mise à jour avec succès
+        "400":
+          description: Requête invalide
+        "404":
+          description: Promotion non trouvée
+    delete:
+      summary: Supprimer une promotion par son ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        "204":
+          description: Promotion supprimée avec succès
+        "404":
+          description: Promotion non trouvée
+components:
+  schemas:
+    Promotion:
+      type: object
+      properties:
+        id:
+          type: integer
+        product_id:
+          type: integer
+        discount_percentage:
+          type: number
+          format: float
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+    NewPromotion:
+      required:
+      - discount_percentage
+      - end_date
+      - product_id
+      - start_date
+      type: object
+      properties:
+        product_id:
+          type: integer
+        discount_percentage:
+          type: number
+          format: float
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      name: X-API-Key
+      in: header
